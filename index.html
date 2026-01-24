@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADHD Accountability Buddy</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(-5deg); }
+            50% { transform: rotate(5deg); }
+        }
+        
+        @keyframes bounceSlow {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        .animate-gradient {
+            background-size: 200% 200%;
+            animation: gradient 3s ease infinite;
+        }
+        
+        .animate-fade-in-up {
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+        
+        .animate-wiggle {
+            animation: wiggle 2s ease-in-out infinite;
+        }
+        
+        .animate-bounce-slow {
+            animation: bounceSlow 2s ease-in-out infinite;
+        }
+        
+        .animation-delay-200 {
+            animation-delay: 0.2s;
+            opacity: 0;
+        }
+        
+        .animation-delay-400 {
+            animation-delay: 0.4s;
+            opacity: 0;
+        }
+        
+        .animation-delay-600 {
+            animation-delay: 0.6s;
+            opacity: 0;
+        }
+        
+        .animation-delay-800 {
+            animation-delay: 0.8s;
+            opacity: 0;
+        }
+        
+        .animation-delay-1000 {
+            animation-delay: 1s;
+            opacity: 0;
+        }
+        
+        .animation-delay-1200 {
+            animation-delay: 1.2s;
+            opacity: 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // Lucide React icons as inline SVG components
+        const Bell = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+        );
+
+        const CheckCircle2 = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+        );
+
+        const XCircle = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+        );
+
+        const BarChart3 = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+        );
+
+        const Play = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+        );
+
+        const Pause = ({ className }) => (
+            <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+        );
+
+        function ADHDBuddy() {
+            const [showWelcome, setShowWelcome] = useState(true);
+            const [tasks, setTasks] = useState(['', '', '']);
+            const [isActive, setIsActive] = useState(false);
+            const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
+            const [checkIns, setCheckIns] = useState([]);
+            const [showCheckIn, setShowCheckIn] = useState(false);
+            const [intervalMinutes, setIntervalMinutes] = useState(30);
+            const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+            const timerRef = useRef(null);
+
+            const enableNotifications = async () => {
+                if ('Notification' in window) {
+                    const permission = await Notification.requestPermission();
+                    setNotificationsEnabled(permission === 'granted');
+                    return permission === 'granted';
+                }
+                return false;
+            };
+
+            const sendNotification = () => {
+                if (notificationsEnabled && tasks[currentTaskIndex]) {
+                    new Notification('Time to check in! 🎯', {
+                        body: `Are you still working on: ${tasks[currentTaskIndex]}?`,
+                        requireInteraction: true
+                    });
+                }
+            };
+
+            const startTracking = async () => {
+                const activeTasks = tasks.filter(t => t.trim());
+                if (activeTasks.length === 0) {
+                    alert('Add at least one task first!');
+                    return;
+                }
+
+                const enabled = await enableNotifications();
+                if (!enabled) {
+                    if (!confirm('Notifications are disabled. Continue anyway?')) return;
+                }
+
+                setIsActive(true);
+                setCheckIns([]);
+                scheduleNextCheckIn();
+            };
+
+            const scheduleNextCheckIn = () => {
+                if (timerRef.current) clearTimeout(timerRef.current);
+                
+                timerRef.current = setTimeout(() => {
+                    setShowCheckIn(true);
+                    sendNotification();
+                }, intervalMinutes * 60 * 1000);
+            };
+
+            const handleCheckIn = (onTask, activity = '') => {
+                const checkIn = {
+                    time: new Date().toLocaleTimeString(),
+                    task: tasks[currentTaskIndex],
+                    onTask,
+                    activity
+                };
+                
+                setCheckIns([...checkIns, checkIn]);
+                setShowCheckIn(false);
+                
+                if (isActive) {
+                    scheduleNextCheckIn();
+                }
+            };
+
+            const stopTracking = () => {
+                setIsActive(false);
+                if (timerRef.current) clearTimeout(timerRef.current);
+            };
+
+            const stats = {
+                total: checkIns.length,
+                onTask: checkIns.filter(c => c.onTask).length,
+                wandered: checkIns.filter(c => !c.onTask).length,
+                focusRate: checkIns.length > 0 
+                    ? Math.round((checkIns.filter(c => c.onTask).length / checkIns.length) * 100) 
+                    : 0
+            };
+
+            useEffect(() => {
+                return () => {
+                    if (timerRef.current) clearTimeout(timerRef.current);
+                };
+            }, []);
+
+            return (
+                <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
+                    {showWelcome && (
+                        <div className="fixed inset-0 bg-gradient-to-br from-purple-600 via-pink-500 to-blue-500 flex items-center justify-center z-50 animate-gradient" style={{ pointerEvents: 'auto' }}>
+                            <div className="text-center px-6 max-w-lg" style={{ pointerEvents: 'auto' }}>
+                                <div className="mb-8 animate-bounce-slow">
+                                    <div className="relative inline-block">
+                                        <div className="absolute inset-0 bg-white rounded-full blur-xl opacity-50"></div>
+                                        <Bell className="w-24 h-24 text-white relative animate-wiggle" />
+                                    </div>
+                                </div>
+                                
+                                <h1 className="text-5xl md:text-6xl font-black text-white mb-4 animate-fade-in-up">
+                                    Hey! 👋
+                                </h1>
+                                
+                                <h2 className="text-3xl md:text-4xl font-bold text-white mb-6 animate-fade-in-up animation-delay-200">
+                                    Let's stay on track together
+                                </h2>
+                                
+                                <div className="space-y-4 mb-8 text-left">
+                                    <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-xl p-4 text-white animate-fade-in-up animation-delay-400">
+                                        <p className="text-lg font-semibold flex items-center gap-3">
+                                            <span className="text-2xl">✨</span> Tell me what you want to focus on
+                                        </p>
+                                    </div>
+                                    <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-xl p-4 text-white animate-fade-in-up animation-delay-600">
+                                        <p className="text-lg font-semibold flex items-center gap-3">
+                                            <span className="text-2xl">⏰</span> I'll check in with you regularly
+                                        </p>
+                                    </div>
+                                    <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-xl p-4 text-white animate-fade-in-up animation-delay-800">
+                                        <p className="text-lg font-semibold flex items-center gap-3">
+                                            <span className="text-2xl">📊</span> Watch your focus patterns emerge
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <button
+                                    onClick={() => setShowWelcome(false)}
+                                    className="bg-white text-purple-600 font-black text-xl px-12 py-4 rounded-full hover:scale-105 transform transition-all shadow-2xl animate-fade-in-up animation-delay-1000 cursor-pointer"
+                                    style={{ pointerEvents: 'auto' }}
+                                >
+                                    Let's do this! 🚀
+                                </button>
+                                
+                                <p className="text-white text-opacity-80 text-sm mt-6 animate-fade-in-up animation-delay-1200">
+                                    No judgment. No pressure. Just gentle accountability.
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="p-4 max-w-2xl mx-auto">
+                        <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
+                            <div className="flex items-center gap-3 mb-2">
+                                <Bell className="w-8 h-8 text-purple-600" />
+                                <h1 className="text-3xl font-bold text-gray-800">ADHD Accountability Buddy</h1>
+                            </div>
+                            <p className="text-gray-600">Stay on track with gentle check-ins. No judgment, just awareness.</p>
+                        </div>
+
+                        {!isActive && (
+                            <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
+                                <h2 className="text-xl font-semibold text-gray-800 mb-4">What do you want to focus on today?</h2>
+                                
+                                <div className="space-y-3 mb-4">
+                                    {tasks.map((task, i) => (
+                                        <input
+                                            key={i}
+                                            type="text"
+                                            value={task}
+                                            onChange={(e) => {
+                                                const newTasks = [...tasks];
+                                                newTasks[i] = e.target.value;
+                                                setTasks(newTasks);
+                                            }}
+                                            placeholder={`Task ${i + 1} (optional)`}
+                                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none text-lg"
+                                        />
+                                    ))}
+                                </div>
+
+                                <div className="mb-6">
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Check in every:
+                                    </label>
+                                    <select
+                                        value={intervalMinutes}
+                                        onChange={(e) => setIntervalMinutes(Number(e.target.value))}
+                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none"
+                                    >
+                                        <option value={15}>15 minutes</option>
+                                        <option value={30}>30 minutes</option>
+                                        <option value={45}>45 minutes</option>
+                                        <option value={60}>60 minutes</option>
+                                    </select>
+                                </div>
+
+                                <button
+                                    onClick={startTracking}
+                                    className="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-4 px-6 rounded-lg flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                                >
+                                    <Play className="w-5 h-5" />
+                                    Start Tracking
+                                </button>
+                            </div>
+                        )}
+
+                        {isActive && !showCheckIn && (
+                            <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div>
+                                        <h2 className="text-xl font-semibold text-gray-800">Currently working on:</h2>
+                                        <p className="text-2xl font-bold text-purple-600 mt-2">{tasks[currentTaskIndex]}</p>
+                                    </div>
+                                    <button
+                                        onClick={stopTracking}
+                                        className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors cursor-pointer"
+                                    >
+                                        <Pause className="w-4 h-4" />
+                                        Stop
+                                    </button>
+                                </div>
+                                
+                                <p className="text-gray-600">Next check-in in {intervalMinutes} minutes...</p>
+                            </div>
+                        )}
+
+                        {showCheckIn && (
+                            <div className="bg-white rounded-2xl shadow-lg p-6 mb-6 border-4 border-purple-500">
+                                <h2 className="text-2xl font-bold text-gray-800 mb-4">Check-in time! 🎯</h2>
+                                <p className="text-lg text-gray-700 mb-6">
+                                    Are you still working on: <strong>{tasks[currentTaskIndex]}</strong>?
+                                </p>
+                                
+                                <div className="flex gap-4 mb-4">
+                                    <button
+                                        onClick={() => handleCheckIn(true)}
+                                        className="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold py-4 px-6 rounded-lg flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                                    >
+                                        <CheckCircle2 className="w-6 h-6" />
+                                        Yes, still on it!
+                                    </button>
+                                    
+                                    <button
+                                        onClick={() => {
+                                            const activity = prompt('What are you doing instead?');
+                                            handleCheckIn(false, activity || 'Not specified');
+                                        }}
+                                        className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-semibold py-4 px-6 rounded-lg flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                                    >
+                                        <XCircle className="w-6 h-6" />
+                                        No, I wandered
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {checkIns.length > 0 && (
+                            <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <BarChart3 className="w-6 h-6 text-purple-600" />
+                                    <h2 className="text-xl font-semibold text-gray-800">Today's Report</h2>
+                                </div>
+                                
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                                    <div className="bg-purple-50 p-4 rounded-lg">
+                                        <p className="text-sm text-gray-600">Total Check-ins</p>
+                                        <p className="text-3xl font-bold text-purple-600">{stats.total}</p>
+                                    </div>
+                                    <div className="bg-green-50 p-4 rounded-lg">
+                                        <p className="text-sm text-gray-600">Stayed Focused</p>
+                                        <p className="text-3xl font-bold text-green-600">{stats.onTask}</p>
+                                    </div>
+                                    <div className="bg-orange-50 p-4 rounded-lg">
+                                        <p className="text-sm text-gray-600">Wandered Off</p>
+                                        <p className="text-3xl font-bold text-orange-600">{stats.wandered}</p>
+                                    </div>
+                                    <div className="bg-blue-50 p-4 rounded-lg">
+                                        <p className="text-sm text-gray-600">Focus Rate</p>
+                                        <p className="text-3xl font-bold text-blue-600">{stats.focusRate}%</p>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <h3 className="font-semibold text-gray-700 mb-2">History:</h3>
+                                    {checkIns.map((checkIn, i) => (
+                                        <div key={i} className={`p-3 rounded-lg border-l-4 ${checkIn.onTask ? 'bg-green-50 border-green-500' : 'bg-orange-50 border-orange-500'}`}>
+                                            <div className="flex justify-between items-start">
+                                                <div>
+                                                    <p className="font-medium text-gray-800">{checkIn.task}</p>
+                                                    {!checkIn.onTask && checkIn.activity && (
+                                                        <p className="text-sm text-gray-600">Actually doing: {checkIn.activity}</p>
+                                                    )}
+                                                </div>
+                                                <span className="text-sm text-gray-500">{checkIn.time}</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="text-center text-gray-600 text-sm">
+                            <p>Built for ADHD brains by ADHD brains 💜</p>
+                            <p className="mt-1">No data leaves your browser. Everything stays local.</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<ADHDBuddy />, document.getElementById('root'));
+    </script>
+</body>
+</html>
